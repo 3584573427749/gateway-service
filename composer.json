@@ -29,7 +29,7 @@
     "squizlabs/php_codesniffer": "^4.0",
     "rector/rector": "^2.5",
     "infection/infection": "^0.35.4",
-    "phpro/grumphp": "^2.22",
+    "phpro/grumphp": "^2.23",
     "league/openapi-psr7-validator": "^0.24.0"
   },
   "autoload": {
