@@ -1,0 +1,10 @@
+name: OpenAPI Validation
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  openapi:
+    uses: 3584573427749/.github/.github/workflows/openapi-check.yml@main

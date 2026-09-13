@@ -1,0 +1,34 @@
+grumphp:
+  stop_on_failure: true
+
+  hooks_preset: local
+  process_timeout: 300
+
+  tasks:
+
+    composer:
+      no_check_publish: true
+
+    phpstan:
+      configuration: phpstan.neon
+      memory_limit: "1G"
+
+    phpunit:
+      always_execute: false
+      testsuite: Unit
+
+
+    git_blacklist:
+      keywords:
+        - ' var_dump('
+        - ' dump('
+        - ' dd('
+        - ' die('
+        - ' exit('
+
+      ignore_patterns:
+        - 'bin/'
+        - 'migrations/'
+
+    composer_script:
+      script: cs-fix

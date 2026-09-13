@@ -1,0 +1,10 @@
+name: Security Checks
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  security:
+    uses: 3584573427749/.github/.github/workflows/security.yml@main

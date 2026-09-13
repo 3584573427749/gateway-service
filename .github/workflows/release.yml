@@ -1,0 +1,13 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    uses: 3584573427749/.github/.github/workflows/release-backend-service.yml@main
+    permissions:
+      contents: read
+      packages: write

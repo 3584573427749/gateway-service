@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  slim-service:
+    container_name: slim-service
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/var/www
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
