@@ -15,7 +15,7 @@ COPY . .
 COPY docker/*.sh /
 RUN chmod +x /*.sh
 
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["php", "-S", "0.0.0.0:8080", "-t", "public"]
 EXPOSE 8080
