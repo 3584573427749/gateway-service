@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 use App\Application\ErrorHandler\ErrorHandler;
 use App\Application\Middleware\ErrorMiddleware;
+use App\Config\ServiceRegistry;
 use DI\ContainerBuilder;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DriverManager;
-use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
 return function (ContainerBuilder $builder) {
@@ -19,20 +17,11 @@ return function (ContainerBuilder $builder) {
         ErrorHandler::class => fn ($c) => new ErrorHandler($c->get('logger')),
         ErrorMiddleware::class => fn ($c) => new ErrorMiddleware($c->get(ErrorHandler::class)),
 
-        // Database Connection (singleton)
-        Connection::class => function (ContainerInterface $c) {
-            $connectionParams = [
-                'dbname' => $_ENV['DB_NAME'],
-                'user' => $_ENV['DB_USER'],
-                'password' => $_ENV['DB_PASSWORD'],
-                'host' => $_ENV['DB_HOST'],
-                'port' => $_ENV['DB_PORT'] ?? 3306,
-                'driver' => 'pdo_mysql',
-                'charset' => 'utf8mb4',
-            ];
-
-            return DriverManager::getConnection($connectionParams);
-        },
+        ServiceRegistry::class => static fn () =>
+        new ServiceRegistry([
+            'auth' => $_ENV['AUTH_SERVICE_URL'],
+            'group' => $_ENV['GROUP_SERVICE_URL'],
+        ]),
 
     ]);
 };

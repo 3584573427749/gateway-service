@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
+use DI\Container;
 use Dotenv\Dotenv;
-use Psr\Http\Message\ResponseInterface;
 use Slim\App;
 
 abstract class BaseApiTestCases {
+    /**
+     * @var App<Container>
+     */
     protected App $app;
 
     protected function setUp() : void {

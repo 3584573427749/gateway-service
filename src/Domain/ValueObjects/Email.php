@@ -20,23 +20,23 @@ final class Email implements JsonSerializable {
         $this->value = $clean;
     }
 
-    public static function fromString(string $value):self {
+    public static function fromString(string $value) : self {
         return new self($value);
     }
 
-    public function toString():string {
+    public function toString() : string {
         return $this->value;
     }
 
-    public function __toString():string {
+    public function __toString() : string {
         return $this->value;
     }
 
-    public function jsonSerialize():string {
+    public function jsonSerialize() : string {
         return $this->value;
     }
 
-    public function equals(self $other):bool {
+    public function equals(self $other) : bool {
         return $this->value === $other->value;
     }
 }
