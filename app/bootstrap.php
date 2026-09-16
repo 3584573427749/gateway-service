@@ -18,9 +18,6 @@ $containerBuilder = new ContainerBuilder();
 
 (require __DIR__ . '/dependencies.php')($containerBuilder);
 
-$repositories = require __DIR__ . '/repositories.php';
-$repositories($containerBuilder);
-
 $container = $containerBuilder->build();
 
 AppFactory::setContainer($container);

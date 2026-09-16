@@ -1,7 +1,6 @@
 FROM php:8.5-fpm-alpine
 
-RUN apk add --no-cache bash git curl mariadb-client oniguruma-dev \
-    && docker-php-ext-install pdo pdo_mysql
+RUN apk add --no-cache bash git curl
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
