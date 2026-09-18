@@ -9,7 +9,7 @@ use GuzzleHttp\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-final class ProxyService {
+class ProxyService {
     public function __construct(
         private ClientInterface $httpClient,
         private ServiceRegistry $serviceRegistry,
