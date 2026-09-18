@@ -15,10 +15,7 @@ use RuntimeException;
 
 final class ProxyServiceTest extends TestCase {
     /**
-     * @param string $method
      * @param array<string, array<int, string>> $headers
-     * @param string $body
-     * @return ServerRequestInterface
      * @throws Exception
      */
     private function createRequestMock(
