@@ -12,7 +12,7 @@ use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 
 final class HealthServiceTest extends TestCase {
-    public function testReturnsHealthyWhenAllServicesAreUp() : void {
+    public function testReturnsOkWhenAllServicesAreUp() : void {
         $response = $this->createMock(ResponseInterface::class);
 
         $response
@@ -36,23 +36,15 @@ final class HealthServiceTest extends TestCase {
             $registry,
         );
 
+        $health = $service->getHealthStatus();
+
         self::assertSame(
-            [
-                'status' => 'healthy',
-                'services' => [
-                    'auth' => [
-                        'status' => 'up',
-                    ],
-                    'groups' => [
-                        'status' => 'up',
-                    ],
-                ],
-            ],
-            $service->getHealthStatus(),
+            'ok',
+            $health['status'],
         );
     }
 
-    public function testReturnsDegradedWhenAServiceReturns500() : void {
+    public function testReturnsDegradedWhenServiceReturns500() : void {
         $response = $this->createMock(ResponseInterface::class);
 
         $response
@@ -75,16 +67,16 @@ final class HealthServiceTest extends TestCase {
             $registry,
         );
 
+        $health = $service->getHealthStatus();
+
         self::assertSame(
-            [
-                'status' => 'degraded',
-                'services' => [
-                    'auth' => [
-                        'status' => 'down',
-                    ],
-                ],
-            ],
-            $service->getHealthStatus(),
+            'degraded',
+            $health['status'],
+        );
+
+        self::assertSame(
+            'down',
+            $health['services']['auth']['status'],
         );
     }
 
@@ -107,16 +99,122 @@ final class HealthServiceTest extends TestCase {
             $registry,
         );
 
+        $health = $service->getHealthStatus();
+
         self::assertSame(
-            [
-                'status' => 'degraded',
-                'services' => [
-                    'auth' => [
-                        'status' => 'down',
-                    ],
-                ],
-            ],
-            $service->getHealthStatus(),
+            'degraded',
+            $health['status'],
+        );
+
+        self::assertSame(
+            'down',
+            $health['services']['auth']['status'],
+        );
+    }
+
+    public function testReturnsGatewayServiceName() : void {
+        $response = $this->createMock(ResponseInterface::class);
+
+        $response
+            ->method('getStatusCode')
+            ->willReturn(200);
+
+        $client = $this->createMock(ClientInterface::class);
+
+        $client
+            ->method('request')
+            ->willReturn($response);
+
+        $registry = new ServiceRegistry([
+            'auth' => 'http://auth:8080',
+        ]);
+
+        $service = new HealthService(
+            $client,
+            $registry,
+        );
+
+        $health = $service->getHealthStatus();
+
+        self::assertSame(
+            'gw-service',
+            $health['service'],
+        );
+    }
+
+    public function testReturnsVersion() : void {
+        $response = $this->createMock(ResponseInterface::class);
+
+        $response
+            ->method('getStatusCode')
+            ->willReturn(200);
+
+        $client = $this->createMock(ClientInterface::class);
+
+        $client
+            ->method('request')
+            ->willReturn($response);
+
+        $registry = new ServiceRegistry([
+            'auth' => 'http://auth:8080',
+        ]);
+
+        $service = new HealthService(
+            $client,
+            $registry,
+        );
+
+        $health = $service->getHealthStatus();
+
+        self::assertArrayHasKey(
+            'version',
+            $health,
+        );
+
+        self::assertNotEmpty(
+            $health['version'],
+        );
+    }
+
+    public function testReturnsAllRegisteredServices() : void {
+        $response = $this->createMock(ResponseInterface::class);
+
+        $response
+            ->method('getStatusCode')
+            ->willReturn(200);
+
+        $client = $this->createMock(ClientInterface::class);
+
+        $client
+            ->expects(self::exactly(2))
+            ->method('request')
+            ->willReturn($response);
+
+        $registry = new ServiceRegistry([
+            'auth' => 'http://auth:8080',
+            'groups' => 'http://group:8080',
+        ]);
+
+        $service = new HealthService(
+            $client,
+            $registry,
+        );
+
+        $health = $service->getHealthStatus();
+
+        self::assertArrayHasKey(
+            'services',
+            $health,
+        );
+
+        self::assertArrayHasKey(
+            'auth',
+            $health['services'],
+        );
+
+        self::assertArrayHasKey(
+            'groups',
+            $health['services'],
         );
     }
 }

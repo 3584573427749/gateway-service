@@ -27,7 +27,7 @@ final class HealthService {
             ];
         }
 
-        $overallStatus = 'healthy';
+        $overallStatus = 'ok';
 
         foreach ($services as $service) {
             if ($service['status'] !== 'up') {
@@ -36,8 +36,15 @@ final class HealthService {
             }
         }
 
+        $version = file_get_contents(dirname(__DIR__, 3) . '/VERSION');
+        if ($version === false) {
+            $version = 'unknown';
+        }
+
         return [
             'status' => $overallStatus,
+            'service' => 'gw-service',
+            'version' => trim($version),
             'services' => $services,
         ];
     }
@@ -45,8 +52,8 @@ final class HealthService {
     private function checkService(string $baseUrl) : string {
         try {
             $response = rtrim($baseUrl, '/')
-                    |> (fn ($x) => sprintf('%s/health', $x, ))
-                    |> (fn ($x) => $this->httpClient->request('GET', $x, ['http_errors' => false, ], ));
+                    |> (fn ($x) => sprintf('%s/health', $x))
+                    |> (fn ($x) => $this->httpClient->request('GET', $x, ['http_errors' => false, ]));
 
             return $response->getStatusCode() === 200
                 ? 'up'
