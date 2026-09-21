@@ -20,7 +20,7 @@ class ProxyService {
         ServerRequestInterface $request,
         string $service,
         string $path,
-    ) : ResponseInterface {
+    ): ResponseInterface {
         $baseUrl = $this->serviceRegistry->get($service);
 
         $targetUrl = sprintf(
@@ -29,13 +29,16 @@ class ProxyService {
             ltrim($path, '/'),
         );
 
+        /** @var array<string, mixed> $headers */
+        $headers = $this->filterHeaders(
+            $request->getHeaders(),
+        );
+
         return $this->httpClient->request(
             $request->getMethod(),
             $targetUrl,
             [
-                'headers' => $this->filterHeaders(
-                    $request->getHeaders(),
-                ),
+                'headers' => $headers,
                 'body' => (string)$request->getBody(),
                 'http_errors' => false,
             ],
@@ -43,11 +46,11 @@ class ProxyService {
     }
 
     /**
-     * @param array<array<string>> $headers
+     * @param array<string, array<string>> $headers
      *
-     * @return array<array<string>>
+     * @return array<string, array<string>>
      */
-    private function filterHeaders(array $headers) : array {
+    private function filterHeaders(array $headers): array {
         foreach ($headers as $name => $values) {
             if (strtolower($name) === 'host') {
                 unset($headers[$name]);
