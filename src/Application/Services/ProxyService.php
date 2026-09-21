@@ -43,9 +43,9 @@ class ProxyService {
     }
 
     /**
-     * @param array<string,array<int,string>> $headers
+     * @param array<array<string>> $headers
      *
-     * @return array<string,array<int,string>>
+     * @return array<array<string>>
      */
     private function filterHeaders(array $headers) : array {
         foreach ($headers as $name => $values) {
