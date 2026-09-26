@@ -9,5 +9,5 @@ use Slim\App;
 return function (App $app) : void {
 
     $app->get('/health', ShowHealthAction::class);
-    $app->map(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], '/api/{service}/{path:.*}', ProxyAction::class);
+    $app->map(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], '/{service}/{path:.*}', ProxyAction::class);
 };
