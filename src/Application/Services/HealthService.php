@@ -6,10 +6,11 @@ namespace App\Application\Services;
 
 use App\Config\ServiceRegistry;
 use GuzzleHttp\ClientInterface;
-use Throwable;
+use Psr\Log\LoggerInterface;
 
 final class HealthService {
     public function __construct(
+        private LoggerInterface $logger,
         private ClientInterface $httpClient,
         private ServiceRegistry $serviceRegistry,
     ) {
@@ -30,7 +31,7 @@ final class HealthService {
         $overallStatus = 'ok';
 
         foreach ($services as $service) {
-            if ($service['status'] !== 'up') {
+            if ($service['status']['data']['status'] !== 'ok') {
                 $overallStatus = 'degraded';
                 break;
             }
@@ -43,23 +44,35 @@ final class HealthService {
 
         return [
             'status' => $overallStatus,
-            'service' => 'gw-service',
+            'service' => 'gateway-service',
             'version' => trim($version),
             'services' => $services,
         ];
     }
 
-    private function checkService(string $baseUrl) : string {
+    /**
+     *
+     * @return array<string,mixed>
+     */
+    private function checkService(string $baseUrl) : array {
         try {
             $response = rtrim($baseUrl, '/')
                     |> (fn ($x) => sprintf('%s/health', $x))
                     |> (fn ($x) => $this->httpClient->request('GET', $x, ['http_errors' => false, ]));
 
             return $response->getStatusCode() === 200
-                ? 'up'
-                : 'down';
-        } catch (Throwable) {
-            return 'down';
+                ? json_decode($response->getBody()->getContents(), true)
+                : ['data' => ['status' => 'down', ], ];
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                sprintf('Error checking health of service at %s: %s', $baseUrl, $e->getMessage()),
+            );
+
+            return [
+                'data' => [
+                    'status' => 'down',
+                ],
+            ];
         }
     }
 }
