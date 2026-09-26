@@ -9,15 +9,32 @@ use App\Config\ServiceRegistry;
 use GuzzleHttp\ClientInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 final class HealthServiceTest extends TestCase {
     public function testReturnsOkWhenAllServicesAreUp() : void {
+        $stream = $this->createMock(StreamInterface::class);
+
+        $stream
+            ->method('getContents')
+            ->willReturn(json_encode([
+                'statusCode' => 200,
+                'data' => [
+                    'status' => 'ok',
+                ],
+            ]));
+
         $response = $this->createMock(ResponseInterface::class);
 
         $response
             ->method('getStatusCode')
             ->willReturn(200);
+
+        $response
+            ->method('getBody')
+            ->willReturn($stream);
 
         $client = $this->createMock(ClientInterface::class);
 
@@ -26,14 +43,13 @@ final class HealthServiceTest extends TestCase {
             ->method('request')
             ->willReturn($response);
 
-        $registry = new ServiceRegistry([
-            'auth' => 'http://auth:8080',
-            'groups' => 'http://group:8080',
-        ]);
-
         $service = new HealthService(
+            $this->createMock(LoggerInterface::class),
             $client,
-            $registry,
+            new ServiceRegistry([
+                'auth' => 'http://auth:8080',
+                'groups' => 'http://group:8080',
+            ]),
         );
 
         $health = $service->getHealthStatus();
@@ -51,6 +67,8 @@ final class HealthServiceTest extends TestCase {
             ->method('getStatusCode')
             ->willReturn(500);
 
+        $logger = $this->createMock(LoggerInterface::class);
+
         $client = $this->createMock(ClientInterface::class);
 
         $client
@@ -63,6 +81,7 @@ final class HealthServiceTest extends TestCase {
         ]);
 
         $service = new HealthService(
+            $logger,
             $client,
             $registry,
         );
@@ -75,7 +94,7 @@ final class HealthServiceTest extends TestCase {
         );
 
         self::assertSame(
-            'down',
+            ['data' => ['status' => 'down', ], ],
             $health['services']['auth']['status'],
         );
     }
@@ -90,14 +109,13 @@ final class HealthServiceTest extends TestCase {
                 new RuntimeException('Connection refused'),
             );
 
+        $logger = $this->createMock(LoggerInterface::class);
+
         $registry = new ServiceRegistry([
             'auth' => 'http://auth:8080',
         ]);
 
-        $service = new HealthService(
-            $client,
-            $registry,
-        );
+        $service = new HealthService($logger, $client, $registry);
 
         $health = $service->getHealthStatus();
 
@@ -107,7 +125,7 @@ final class HealthServiceTest extends TestCase {
         );
 
         self::assertSame(
-            'down',
+            ['data' => ['status' => 'down', ], ],
             $health['services']['auth']['status'],
         );
     }
@@ -125,19 +143,18 @@ final class HealthServiceTest extends TestCase {
             ->method('request')
             ->willReturn($response);
 
+        $logger = $this->createMock(LoggerInterface::class);
+
         $registry = new ServiceRegistry([
             'auth' => 'http://auth:8080',
         ]);
 
-        $service = new HealthService(
-            $client,
-            $registry,
-        );
+        $service = new HealthService($logger, $client, $registry);
 
         $health = $service->getHealthStatus();
 
         self::assertSame(
-            'gw-service',
+            'gateway-service',
             $health['service'],
         );
     }
@@ -159,10 +176,8 @@ final class HealthServiceTest extends TestCase {
             'auth' => 'http://auth:8080',
         ]);
 
-        $service = new HealthService(
-            $client,
-            $registry,
-        );
+        $logger = $this->createMock(LoggerInterface::class);
+        $service = new HealthService($logger, $client, $registry);
 
         $health = $service->getHealthStatus();
 
@@ -183,6 +198,7 @@ final class HealthServiceTest extends TestCase {
             ->method('getStatusCode')
             ->willReturn(200);
 
+        $logger = $this->createMock(LoggerInterface::class);
         $client = $this->createMock(ClientInterface::class);
 
         $client
@@ -196,6 +212,7 @@ final class HealthServiceTest extends TestCase {
         ]);
 
         $service = new HealthService(
+            $logger,
             $client,
             $registry,
         );
