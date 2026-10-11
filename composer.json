@@ -27,7 +27,7 @@
     "squizlabs/php_codesniffer": "^4.0",
     "rector/rector": "^2.6",
     "infection/infection": "^0.35.4",
-    "phpro/grumphp": "^2.23"
+    "phpro/grumphp": "^2.25"
   },
   "autoload": {
     "psr-4": {
